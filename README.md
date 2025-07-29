@@ -53,12 +53,16 @@ This is a monorepo built with Turborepo containing:
    # API Configuration
    API_BASE_URL=http://localhost:3002
    
-   # Weather API (OpenWeatherMap)
-   OPENWEATHER_API_KEY=your_api_key_here
+   # Weather API (Open-Meteo - Free, no API key required)
+   # Using Open-Meteo API for Agramunt, Spain coordinates
+   # No API key needed - coordinates-based free weather data
    
    # Fronius Solar Inverter
    FRONIUS_HOST=your_inverter_ip
    FRONIUS_PORT=80
+   
+   # Production Configuration
+   NEXT_PUBLIC_API_URL=http://localhost:3002
    ```
 
 4. **Start development servers**
@@ -153,7 +157,7 @@ This project uses:
 | Variable | Description | Required |
 |----------|-------------|----------|
 | `API_BASE_URL` | Backend API URL | Yes |
-| `OPENWEATHER_API_KEY` | OpenWeatherMap API key | Yes |
+| `NEXT_PUBLIC_API_URL` | Frontend API URL for production | Yes |
 | `FRONIUS_HOST` | Fronius inverter IP | No |
 | `FRONIUS_PORT` | Fronius inverter port | No |
 
@@ -180,7 +184,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Acknowledgments
 
 - **Fronius** for solar inverter integration
-- **OpenWeatherMap** for weather data
+- **Open-Meteo** for free weather data
 - **Next.js** for the amazing framework
 - **Turborepo** for monorepo management
 

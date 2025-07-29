@@ -10,6 +10,9 @@ import { getFlowColor } from '../utils/getFlowColor';
 import ForecastModal from '../components/ForecastModal';
 import { TIPS_LIBRARY, filterTipsByConditions, getCurrentSeason, getWeatherCondition } from '../utils/tipsLibrary';
 
+// API Configuration - Use environment variable or fallback to localhost
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
+
 interface EnergyData {
   solarProduction: number;
   consumption: number;
@@ -233,7 +236,7 @@ export default function SolarEnergyDashboard() {
 
   const fetchFroniusStatus = async () => {
     try {
-      const response = await fetch('http://localhost:3002/api/fronius/status');
+      const response = await fetch(`${API_BASE_URL}/api/fronius/status`);
       if (response.ok) {
         const status = await response.json();
         setFroniusStatus(status);
@@ -251,7 +254,7 @@ export default function SolarEnergyDashboard() {
   const forceReconnect = async () => {
     setIsCheckingConnection(true);
     try {
-      const response = await fetch('http://localhost:3002/api/fronius/status', {
+      const response = await fetch(`${API_BASE_URL}/api/fronius/status`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -274,7 +277,7 @@ export default function SolarEnergyDashboard() {
 
   const fetchWeatherData = async () => {
     try {
-      const response = await fetch('http://localhost:3002/api/weather/current');
+      const response = await fetch(`${API_BASE_URL}/api/weather/current`);
       if (response.ok) {
         const data = await response.json();
         setWeatherData(data);
@@ -627,7 +630,7 @@ export default function SolarEnergyDashboard() {
 
   const fetchSolarForecast = async () => {
     try {
-      const response = await fetch('http://localhost:3002/api/weather/forecast?days=7&capacity=2200');
+      const response = await fetch(`${API_BASE_URL}/api/weather/forecast?days=7&capacity=2200`);
       if (response.ok) {
         const data = await response.json();
         // Utilitzar directament les dades de l'API que ja inclouen l'anàlisi horària real
