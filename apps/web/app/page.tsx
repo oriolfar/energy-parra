@@ -10,8 +10,10 @@ import { getFlowColor } from '../utils/getFlowColor';
 import ForecastModal from '../components/ForecastModal';
 import { TIPS_LIBRARY, filterTipsByConditions, getCurrentSeason, getWeatherCondition } from '../utils/tipsLibrary';
 
-// API Configuration - Use environment variable or fallback to localhost
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
+// API Configuration - Use relative URLs for production, localhost for development
+const API_BASE_URL = typeof window !== 'undefined' && window.location.hostname !== 'localhost' 
+  ? '' // Use relative URLs in production
+  : 'http://localhost:3002'; // Use localhost in development
 
 interface EnergyData {
   solarProduction: number;
