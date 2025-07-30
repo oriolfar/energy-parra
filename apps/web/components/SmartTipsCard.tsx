@@ -109,14 +109,8 @@ export default function SmartTipsCard({ tips, language }: SmartTipsCardProps) {
           <div 
             key={index} 
             className={`${styles.tipCard} ${styles[`tip-${tip.priority}`]}`}
-            style={{
-              borderLeftColor: getPriorityColor(tip.priority),
-              borderLeftWidth: '4px',
-              borderLeftStyle: 'solid'
-            }}
           >
             <div className={styles.tipHeader}>
-              <div className={styles.tipIcon}>{tip.icon}</div>
               <div className={styles.tipTypeIcon}>{getTypeIcon(tip.type)}</div>
               <div className={styles.tipPriority} style={{ backgroundColor: getPriorityColor(tip.priority) }}>
                 {tip.priority === 'high' ? (language === 'ca' ? 'URGENT' : 'URGENT') :
@@ -125,7 +119,10 @@ export default function SmartTipsCard({ tips, language }: SmartTipsCardProps) {
               </div>
             </div>
             <div className={styles.tipContent}>
-              <div className={styles.tipTitle}>{tip.title}</div>
+              <div className={styles.tipTitle}>
+                <span className={styles.tipIcon}>{tip.icon}</span>
+                {tip.title}
+              </div>
               <div className={styles.tipMessage}>{tip.message}</div>
               <div className={styles.tipAction}>
                 <span className={styles.actionIcon}>👉</span>

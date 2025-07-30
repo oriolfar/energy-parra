@@ -153,6 +153,7 @@ export default function SolarEnergyDashboard() {
   const [isForecastModalOpen, setIsForecastModalOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState<any>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isBurgerOpen, setIsBurgerOpen] = useState(false);
   
   // Manual control states
   const [isManualMode, setIsManualMode] = useState(false);
@@ -883,8 +884,13 @@ export default function SolarEnergyDashboard() {
           <div className={styles.titleRow}>
             {/* Left: Title */}
             <div className={styles.titleLeft}>
+              <img 
+                src="/android-chrome-192x192.png" 
+                alt="Energy Dashboard" 
+                className={styles.titleIcon}
+              />
               <h1 className={styles.mainTitle}>
-                {language === 'ca' ? '🌞 Bones avi!' : '🌞 Hey Grandad!'}
+                {language === 'ca' ? 'Bones avi!' : 'Hey Grandad!'}
               </h1>
             </div>
 
@@ -939,6 +945,122 @@ export default function SolarEnergyDashboard() {
 
             {/* Right: Control Buttons */}
             <div className={styles.controlButtons}>
+              {/* Burger menu for small screens */}
+              <div className={styles.burgerMenu}>
+                <button
+                  className={styles.burgerButton}
+                  onClick={() => setIsBurgerOpen((open) => !open)}
+                  aria-label="Menu"
+                >
+                  <span className={styles.burgerIcon}>☰</span>
+                </button>
+                {isBurgerOpen && (
+                  <div className={styles.burgerDropdown}>
+                    <button
+                      className={styles.controlButton}
+                      onClick={() => setIsModalOpen(true)}
+                      title={language === 'ca' ? 'Estat de connexió' : 'Connection status'}
+                    >
+                      <span className={styles.buttonIcon}>🔌</span>
+                    </button>
+                    <button
+                      className={styles.controlButton}
+                      onClick={() => setLanguage(language === 'ca' ? 'en' : 'ca')}
+                      title={language === 'ca' ? 'Canviar idioma' : 'Change language'}
+                    >
+                      <span className={styles.buttonIcon}>
+                        {language === 'ca' ? '🇬🇧' : '🏴'}
+                      </span>
+                    </button>
+                    <div className={styles.dropdownContainer}>
+                      <button
+                        className={styles.controlButton}
+                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                        title={language === 'ca' ? 'Control manual' : 'Manual control'}
+                      >
+                        <span className={styles.buttonIcon}>⚙️</span>
+                      </button>
+                      {isDropdownOpen && (
+                        <div className={styles.dropdownMenu}>
+                          <div className={styles.manualControlHeader}>
+                            <h3>{language === 'ca' ? 'Control Manual' : 'Manual Control'}</h3>
+                            <button
+                              className={styles.modeToggle}
+                              onClick={() => setIsManualMode(!isManualMode)}
+                            >
+                              {isManualMode ? '🔄' : '🤖'} {language === 'ca' ? 'Mode Manual' : 'Manual Mode'}
+                            </button>
+                          </div>
+                          {isManualMode && (
+                            <div className={styles.manualControls}>
+                              {/* Solar Production Slider */}
+                              <div className={styles.sliderGroup}>
+                                <label className={styles.sliderLabel}>
+                                  ☀️ {language === 'ca' ? 'Producció Solar' : 'Solar Production'}
+                                </label>
+                                <div className={styles.sliderContainer}>
+                                  <input
+                                    type="range"
+                                    min="0"
+                                    max="2200"
+                                    value={manualSolarProduction}
+                                    onChange={(e) => setManualSolarProduction(Number(e.target.value))}
+                                    className={styles.slider}
+                                  />
+                                  <span className={styles.sliderValue}>{manualSolarProduction}W</span>
+                                </div>
+                              </div>
+
+                              {/* Home Consumption Slider */}
+                              <div className={styles.sliderGroup}>
+                                <label className={styles.sliderLabel}>
+                                  🏠 {language === 'ca' ? 'Consum Casa' : 'Home Consumption'}
+                                </label>
+                                <div className={styles.sliderContainer}>
+                                  <input
+                                    type="range"
+                                    min="0"
+                                    max="5000"
+                                    value={manualHomeConsumption}
+                                    onChange={(e) => setManualHomeConsumption(Number(e.target.value))}
+                                    className={styles.slider}
+                                  />
+                                  <span className={styles.sliderValue}>{manualHomeConsumption}W</span>
+                                </div>
+                              </div>
+
+                              {/* Current Status Display */}
+                              <div className={styles.manualStatus}>
+                                <div className={styles.statusItem}>
+                                  <span className={styles.statusLabel}>
+                                    {language === 'ca' ? 'Xarxa:' : 'Grid:'}
+                                  </span>
+                                  <span className={styles.statusValue}>
+                                    {manualHomeConsumption - manualSolarProduction > 0 
+                                      ? `+${manualHomeConsumption - manualSolarProduction}W` 
+                                      : `${manualHomeConsumption - manualSolarProduction}W`}
+                                  </span>
+                                </div>
+                                <div className={styles.statusItem}>
+                                  <span className={styles.statusLabel}>
+                                    {language === 'ca' ? 'Estalvi:' : 'Savings:'}
+                                  </span>
+                                  <span className={styles.statusValue}>
+                                    {manualHomeConsumption - manualSolarProduction < 0 
+                                      ? `€${Math.abs(manualHomeConsumption - manualSolarProduction) * 0.0003}/h` 
+                                      : '€0.00/h'}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+              {/* Button group for large screens */}
               <div className={styles.buttonGroup}>
                 <button 
                   className={styles.controlButton}
@@ -954,12 +1076,12 @@ export default function SolarEnergyDashboard() {
                   title={language === 'ca' ? 'Canviar idioma' : 'Change language'}
                 >
                   <span className={styles.buttonIcon}>
-                    {language === 'ca' ? '🇬🇧' : '🏴󠁥󠁳󠁣󠁴󠁿'}
+                    {language === 'ca' ? '🇬🇧' : '🏴'}
                   </span>
                 </button>
                 <div className={styles.dropdownContainer}>
                 <button 
-                  className={styles.dropdownButton}
+                  className={styles.controlButton}
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   title={language === 'ca' ? 'Control manual' : 'Manual control'}
                 >
