@@ -371,13 +371,15 @@ ${language === 'ca' ? 'Nit - No hi ha producció solar' : 'Night - No solar prod
         </button>
       )}
 
-      <div 
-        className={styles.modalContent} 
-        onClick={(e) => e.stopPropagation()}
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
-      >
+      {/* Inner Container for Horizontal Orientation */}
+      <div className={styles.modalInnerContainer}>
+        <div 
+          className={styles.modalContent} 
+          onClick={(e) => e.stopPropagation()}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+        >
         {/* Header */}
         <div className={styles.modalHeader}>
           <div className={styles.headerInfo}>
@@ -482,6 +484,7 @@ ${language === 'ca' ? 'Nit - No hi ha producció solar' : 'Night - No solar prod
             {activeTooltip.tip}
           </div>
         )}
+        </div>
       </div>
     </div>
   );
