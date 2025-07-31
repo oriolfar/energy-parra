@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styles from './ForecastModal.module.css';
+import { getSolarProductionColor, getProductionQuality, getQualityText } from '../utils/getFlowColor';
 
 interface HourlyData {
   hour: number;
@@ -68,7 +69,7 @@ const ForecastModal: React.FC<ForecastModalProps> = ({ isOpen, onClose, day, lan
   };
 
   const goToNextDay = () => {
-    if (currentDayIndex < forecastData.length - 1) {
+    if (currentDayIndex < limitedForecastData.length - 1) {
       setCurrentDayIndex(currentDayIndex + 1);
     }
   };
@@ -92,7 +93,7 @@ const ForecastModal: React.FC<ForecastModalProps> = ({ isOpen, onClose, day, lan
     const isLeftSwipe = distance > minSwipeDistance;
     const isRightSwipe = distance < -minSwipeDistance;
 
-    if (isLeftSwipe && currentDayIndex < forecastData.length - 1) {
+    if (isLeftSwipe && currentDayIndex < limitedForecastData.length - 1) {
       goToNextDay();
     }
     if (isRightSwipe && currentDayIndex > 0) {
@@ -188,39 +189,23 @@ const ForecastModal: React.FC<ForecastModalProps> = ({ isOpen, onClose, day, lan
   };
 
   const getQualityColor = (quality: string, production: number) => {
-    // Use gold color for bars above 75% production
-    if (production >= 75) return '#fbbf24'; // Gold
-    
-    switch (quality) {
-      case 'excellent': return '#22c55e'; // Green
-      case 'good': return '#facc15'; // Yellow
-      case 'moderate': return '#f97316'; // Orange
-      case 'poor': return '#ef4444'; // Red
-      case 'night': return '#374151'; // Dark gray
-      default: return '#374151';
-    }
+    // Use standardized color palette
+    const isNight = quality === 'night';
+    return getSolarProductionColor(production, isNight);
   };
 
-  const getQualityText = (quality: string) => {
-    if (language === 'ca') {
-      switch (quality) {
-        case 'excellent': return 'ALT';
-        case 'good': return 'BO';
-        case 'moderate': return 'MIG';
-        case 'poor': return 'BAIX';
-        case 'night': return 'NIT';
-        default: return 'NIT';
-      }
-    } else {
-      switch (quality) {
-        case 'excellent': return 'HIGH';
-        case 'good': return 'GOOD';
-        case 'moderate': return 'MED';
-        case 'poor': return 'LOW';
-        case 'night': return 'NIGHT';
-        default: return 'NIGHT';
-      }
-    }
+  const getQualityTextLocal = (quality: string) => {
+    // Map old quality names to new standardized ones
+    const qualityMap: { [key: string]: 'high' | 'good' | 'moderate' | 'low' | 'night' } = {
+      'excellent': 'high',
+      'good': 'good',
+      'moderate': 'moderate',
+      'poor': 'low',
+      'night': 'night'
+    };
+    
+    const standardizedQuality = qualityMap[quality] || 'night';
+    return getQualityText(standardizedQuality, language);
   };
 
   const getTimeTip = (hour: number, irradiance: number, cloudCover: number, precipitation: number, temperature: number, uvIndex: number, language: 'en' | 'ca') => {
@@ -247,8 +232,8 @@ ${language === 'ca' ? 'Producció' : 'Production'}: ${finalProduction}%`;
     // Get hourly data from API
     const hourlyData = day.hourly_analysis?.hourly_data || [];
     
-    // Only show hours from 5:00 to 23:00 (19 hours total)
-    for (let hour = 5; hour <= 23; hour++) {
+    // Only show hours from 6:00 to 22:00 (17 hours total)
+    for (let hour = 6; hour <= 22; hour++) {
       let production = 0;
       let weatherIcon = '🌙';
       let quality: 'excellent' | 'good' | 'moderate' | 'poor' | 'night' = 'night';
@@ -342,6 +327,28 @@ ${language === 'ca' ? 'Nit - No hi ha producció solar' : 'Night - No solar prod
     return peakHour.hour;
   };
 
+  // Limit to today + 3 days (4 days total)
+  const limitedForecastData = forecastData.slice(0, 4);
+  
+  // Find the best day among the limited 4 days only
+  const getBestDayIndex = () => {
+    if (limitedForecastData.length === 0) return 0;
+    
+    let bestIndex = 0;
+    let bestProduction = 0;
+    
+    limitedForecastData.forEach((day, index) => {
+      if (day.estimated_production_kwh > bestProduction) {
+        bestProduction = day.estimated_production_kwh;
+        bestIndex = index;
+      }
+    });
+    
+    return bestIndex;
+  };
+
+  const bestDayIndex = getBestDayIndex();
+
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
       {/* Side Navigation Arrows - Outside Modal */}
@@ -358,7 +365,7 @@ ${language === 'ca' ? 'Nit - No hi ha producció solar' : 'Night - No solar prod
         </button>
       )}
       
-      {currentDayIndex < forecastData.length - 1 && (
+      {currentDayIndex < limitedForecastData.length - 1 && (
         <button 
           className={`${styles.sideArrow} ${styles.rightArrow}`}
           onClick={(e) => {
@@ -391,7 +398,7 @@ ${language === 'ca' ? 'Nit - No hi ha producció solar' : 'Night - No solar prod
           
           {/* Mini Card Navigation */}
           <div className={styles.miniCardNavigation}>
-            {forecastData.map((forecastDay: any, index: number) => (
+            {limitedForecastData.map((forecastDay: any, index: number) => (
               <button
                 key={index}
                 className={`${styles.miniCard} ${
@@ -407,6 +414,11 @@ ${language === 'ca' ? 'Nit - No hi ha producció solar' : 'Night - No solar prod
                 {isToday(forecastDay.date) && (
                   <div className={styles.todayLabel}>
                     {language === 'ca' ? 'AVUI' : 'TODAY'}
+                  </div>
+                )}
+                {index === bestDayIndex && (
+                  <div className={styles.bestDayLabel}>
+                    ⭐
                   </div>
                 )}
               </button>
@@ -464,7 +476,7 @@ ${language === 'ca' ? 'Nit - No hi ha producció solar' : 'Night - No solar prod
                     className={styles.qualityBadge}
                     style={{ backgroundColor: getQualityColor(hour.quality, hour.production) }}
                   >
-                    {getQualityText(hour.quality)}
+                    {getQualityTextLocal(hour.quality)}
                   </div>
                 </div>
               </div>

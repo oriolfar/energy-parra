@@ -6,7 +6,7 @@ import PowerFlowCardPlus from '../components/PowerFlowCardPlus';
 import ConnectionModal from '../components/ConnectionModal';
 import WeatherCard from '../components/WeatherCard';
 import SmartTipsCard from '../components/SmartTipsCard';
-import { getFlowColor } from '../utils/getFlowColor';
+import { getFlowColor, getSolarProductionColor } from '../utils/getFlowColor';
 import ForecastModal from '../components/ForecastModal';
 import { TIPS_LIBRARY, filterTipsByConditions, getCurrentSeason, getWeatherCondition } from '../utils/tipsLibrary';
 
@@ -1172,14 +1172,14 @@ export default function SolarEnergyDashboard() {
           </div>
         </div>
         
-        {/* 5-Day Solar Forecast - Moved to top */}
+        {/* 4-Day Solar Forecast (Today + 3) - Moved to top */}
         {solarForecast.length > 0 && (
           <div className={styles.forecastSection}>
             <div className={styles.forecastGrid}>
-              {solarForecast.slice(0, 6).map((day, index) => {
-                // Calculate best day among all 6 days (including today)
-                const allDays = solarForecast.slice(0, 6);
-                const isBestDay = day.estimated_production_kwh === Math.max(...allDays.map(d => d.estimated_production_kwh));
+              {solarForecast.slice(0, 4).map((day, index) => {
+                // Calculate best day among the 4 days shown (today + 3)
+                const limitedDays = solarForecast.slice(0, 4);
+                const isBestDay = day.estimated_production_kwh === Math.max(...limitedDays.map(d => d.estimated_production_kwh));
                 const productionPercentage = Math.round((day.estimated_production_kwh / 15) * 100); // Assuming 15kWh is max
                 
                 // Format time more user-friendly
@@ -1198,7 +1198,7 @@ export default function SolarEnergyDashboard() {
                   const hourlyData = day.hourly_analysis?.hourly_data || [];
                   const productionData = [];
                   
-                  for (let hour = 5; hour <= 23; hour++) {
+                  for (let hour = 6; hour <= 22; hour++) {
                     const hourData = hourlyData.find((h: any) => h.hour === hour);
                     
                     if (hourData) {
@@ -1238,7 +1238,7 @@ export default function SolarEnergyDashboard() {
                       if (hour >= 6 && hour <= 20) {
                         productionData.push({ hour, production: 30 }); // Default moderate production
                       } else {
-                        productionData.push({ hour, production: 0 }); // Night
+                        productionData.push({ hour, production: 0 }); // Night (21-22h)
                       }
                     }
                   }
@@ -1284,9 +1284,9 @@ export default function SolarEnergyDashboard() {
                   if (!day.hourly_analysis) return null;
                   
                                       const hours = [];
-                    // Use same range as modal: 5h to 23h (19 hours total)
-                  for (let hour = 5; hour <= 23; hour++) {
-                    let color = '#1f2937'; // Darker gray for night
+                    // Use same range as modal: 6h to 22h (17 hours total)
+                  for (let hour = 6; hour <= 22; hour++) {
+                    let color = getSolarProductionColor(0, true); // Night color as default
                     let production = 0;
                     let isNight = false;
                     
@@ -1321,31 +1321,21 @@ export default function SolarEnergyDashboard() {
                       production = Math.round(production * weatherPenalty);
                       production = Math.min(100, Math.max(0, production));
                       
-                      // Use same color logic as modal
-                      if (production >= 75) {
-                        color = '#fbbf24'; // Gold
-                      } else if (production >= 60) {
-                        color = '#22c55e'; // Green
-                      } else if (production >= 30) {
-                        color = '#facc15'; // Yellow
-                      } else if (production > 0) {
-                        color = '#f97316'; // Orange
-                      } else {
-                        color = '#ef4444'; // Red
-                      }
+                      // Use standardized color palette
+                      color = getSolarProductionColor(production, false);
                     } else {
                       // Fallback for hours without data
                       if (hour >= 6 && hour <= 20) {
-                        color = '#f97316'; // Orange for unknown day hours
+                        color = getSolarProductionColor(30, false); // Moderate production for unknown day hours
                       } else {
-                        color = '#1f2937'; // Darker gray for night
+                        color = getSolarProductionColor(0, true); // Night for night hours (21-22h)
                         isNight = true;
                       }
                     }
                     
                     // Check if it's night time (no solar production)
                     if (hour < 6 || hour > 20 || (hourData && hourData.irradiance === 0)) {
-                      color = '#1f2937'; // Darker gray for night
+                      color = getSolarProductionColor(0, true); // Night
                       isNight = true;
                     }
                     
@@ -1364,11 +1354,11 @@ export default function SolarEnergyDashboard() {
                   return (
                     <div className={styles.hourlyBarWrapper}>
                       <div className={styles.hourlyBarWithLabels}>
-                        <div className={styles.hourLabelLeft}>5h</div>
+                        <div className={styles.hourLabelLeft}>6h</div>
                         <div className={styles.hourlyBarContainer}>
                           {hours}
                         </div>
-                        <div className={styles.hourLabelRight}>23h</div>
+                        <div className={styles.hourLabelRight}>22h</div>
                       </div>
                     </div>
                   );

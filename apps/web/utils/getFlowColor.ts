@@ -57,4 +57,72 @@ export function getFlowColor({ solar, home }: FlowColorInput): string {
     const t = flowScore / 0.33;
     return lerpColor(ORANGE, RED, 1 - t);
   }
+}
+
+/**
+ * Get standardized color for solar production levels
+ * Consistent color palette across modal and forecast cards
+ */
+export function getSolarProductionColor(production: number, isNight: boolean = false): string {
+  if (isNight || production === 0) {
+    return '#1f2937'; // Dark gray for night
+  }
+  
+  if (production >= 75) {
+    return '#22c55e'; // Green for high production
+  } else if (production >= 60) {
+    return '#facc15'; // Yellow for good production
+  } else if (production >= 30) {
+    return '#f97316'; // Orange for moderate production
+  } else if (production > 0) {
+    return '#ef4444'; // Red for low production
+  } else {
+    return '#1f2937'; // Dark gray for no production
+  }
+}
+
+/**
+ * Get production quality level based on production percentage
+ */
+export function getProductionQuality(production: number, isNight: boolean = false): 'high' | 'good' | 'moderate' | 'low' | 'night' {
+  if (isNight || production === 0) {
+    return 'night';
+  }
+  
+  if (production >= 75) {
+    return 'high';
+  } else if (production >= 60) {
+    return 'good';
+  } else if (production >= 30) {
+    return 'moderate';
+  } else if (production > 0) {
+    return 'low';
+  } else {
+    return 'night';
+  }
+}
+
+/**
+ * Get quality text in specified language
+ */
+export function getQualityText(quality: 'high' | 'good' | 'moderate' | 'low' | 'night', language: 'en' | 'ca'): string {
+  if (language === 'ca') {
+    switch (quality) {
+      case 'high': return 'ALT';
+      case 'good': return 'BO';
+      case 'moderate': return 'MIG';
+      case 'low': return 'BAIX';
+      case 'night': return 'NIT';
+      default: return 'NIT';
+    }
+  } else {
+    switch (quality) {
+      case 'high': return 'HIGH';
+      case 'good': return 'GOOD';
+      case 'moderate': return 'MED';
+      case 'low': return 'LOW';
+      case 'night': return 'NIGHT';
+      default: return 'NIGHT';
+    }
+  }
 } 
